@@ -1,54 +1,6 @@
 local M = {}
 
--- Whether the post-vault wiring (autocmds, keymaps) has been done.
 local _wired = false
-
---- Apply buffer-local keymaps to a single vault buffer.
-local function setup_buf_keymaps(buf)
-  local cfg = require("notes.config").get()
-  local km  = cfg.keymaps
-  local bopts = function(desc)
-    return { buffer = buf, silent = true, desc = "Notes: " .. desc }
-  end
-  if km.insert_link then
-    vim.keymap.set("n", km.insert_link,
-      function() require("notes.links").insert_existing() end,
-      bopts("insert link to existing note"))
-  end
-  if km.insert_new_link then
-    vim.keymap.set("n", km.insert_new_link,
-      function() require("notes.links").insert_new() end,
-      bopts("insert link to new child note"))
-  end
-  if km.follow_link then
-    vim.keymap.set("n", km.follow_link,
-      function() require("notes.links").follow() end,
-      bopts("follow link under cursor"))
-  end
-  if km.backlinks then
-    vim.keymap.set("n", km.backlinks,
-      function() require("notes.backlinks").show() end,
-      bopts("show backlinks"))
-  end
-  if km.daily then
-    vim.keymap.set("n", km.daily,
-      function() require("notes.journal").open_daily() end,
-      bopts("open today's daily note"))
-  end
-  if km.search then
-    vim.keymap.set("n", km.search,
-      function() require("notes.search").search() end,
-      bopts("search vault"))
-  end
-  if km.index then
-    vim.keymap.set("n", km.index,
-      function()
-        require("notes.index").generate()
-        vim.cmd.edit(cfg.vault .. "/" .. cfg.index_file)
-      end,
-      bopts("open index"))
-  end
-end
 
 --- Complete the setup that requires a known vault path.
 --- Safe to call multiple times; only runs once.
@@ -66,21 +18,48 @@ local function wire()
     require("notes.index").setup_autocmd()
   end
 
-  -- Buffer-local keymaps — only active inside vault *.md files
-  vim.api.nvim_create_autocmd("BufEnter", {
-    pattern = cfg.vault .. "/**/*.md",
-    group   = vim.api.nvim_create_augroup("NotesKeymaps", { clear = true }),
-    callback = function(ev) setup_buf_keymaps(ev.buf) end,
-  })
-
-  -- Apply keymaps to any vault *.md buffers already open (e.g. when the
-  -- plugin is lazy-loaded and BufEnter fired before wire() ran).
-  local vault = cfg.vault
-  for _, buf in ipairs(vim.api.nvim_list_bufs()) do
-    local name = vim.api.nvim_buf_get_name(buf)
-    if name:sub(1, #vault) == vault and name:match("%.md$") then
-      setup_buf_keymaps(buf)
-    end
+  -- Global keymaps — active everywhere once the vault is known
+  local km   = cfg.keymaps
+  local opts = function(desc)
+    return { silent = true, desc = "Notes: " .. desc }
+  end
+  if km.insert_link then
+    vim.keymap.set("n", km.insert_link,
+      function() require("notes.links").insert_existing() end,
+      opts("insert link to existing note"))
+  end
+  if km.insert_new_link then
+    vim.keymap.set("n", km.insert_new_link,
+      function() require("notes.links").insert_new() end,
+      opts("insert link to new child note"))
+  end
+  if km.follow_link then
+    vim.keymap.set("n", km.follow_link,
+      function() require("notes.links").follow() end,
+      opts("follow link under cursor"))
+  end
+  if km.backlinks then
+    vim.keymap.set("n", km.backlinks,
+      function() require("notes.backlinks").show() end,
+      opts("show backlinks"))
+  end
+  if km.daily then
+    vim.keymap.set("n", km.daily,
+      function() require("notes.journal").open_daily() end,
+      opts("open today's daily note"))
+  end
+  if km.search then
+    vim.keymap.set("n", km.search,
+      function() require("notes.search").search() end,
+      opts("search vault"))
+  end
+  if km.index then
+    vim.keymap.set("n", km.index,
+      function()
+        require("notes.index").generate()
+        vim.cmd.edit(cfg.vault .. "/" .. cfg.index_file)
+      end,
+      opts("open index"))
   end
 end
 
@@ -92,14 +71,12 @@ local function ensure_vault(callback)
   local files  = require("notes.files")
   local cfg    = config.get()
 
-  -- Already known
   if cfg.vault then
     wire()
     callback()
     return
   end
 
-  -- Try to detect from cwd upwards
   local detected = files.find_vault_root()
   if detected then
     config.set_vault(detected)
@@ -108,7 +85,6 @@ local function ensure_vault(callback)
     return
   end
 
-  -- Ask the user
   local cwd = vim.fn.getcwd()
   vim.ui.select({ "Yes", "No" }, {
     prompt = string.format("'%s' is not inside a notes vault. Initialize it as vault root?", cwd),
@@ -126,7 +102,7 @@ function M.setup(opts)
   local config = require("notes.config")
   config.setup(opts)
 
-  -- Wire immediately if vault is known; otherwise try to auto-detect from cwd.
+  -- Try to detect vault from cwd immediately (covers `nvim` with no file).
   if config.get().vault then
     wire()
   else
@@ -137,9 +113,8 @@ function M.setup(opts)
     end
   end
 
-  -- Fallback: detect vault from the directory of any *.md file entered.
-  -- Handles the case where Neovim starts outside the vault (e.g. `nvim ~/notes/foo.md`
-  -- run from ~). The _wired guard makes this a no-op once the vault is known.
+  -- Fallback: detect from the file's own directory when Neovim is opened
+  -- outside the vault (e.g. `nvim ~/notes/foo.md` run from ~).
   vim.api.nvim_create_autocmd("BufEnter", {
     pattern  = "*.md",
     group    = vim.api.nvim_create_augroup("NotesAutoDetect", { clear = true }),
@@ -155,12 +130,12 @@ function M.setup(opts)
     end,
   })
 
-  -- ── Commands (registered unconditionally; vault resolved on first use) ───
+  -- ── Commands ─────────────────────────────────────────────────────────────
 
   vim.api.nvim_create_user_command("NotesInit", function()
-    local files  = require("notes.files")
+    local files   = require("notes.files")
     local config2 = require("notes.config")
-    local cwd    = vim.fn.getcwd()
+    local cwd     = vim.fn.getcwd()
     if vim.fn.filereadable(cwd .. "/" .. files.MARKER) == 1 then
       vim.notify("notes.nvim: '" .. cwd .. "' is already a vault root", vim.log.levels.INFO)
       return
@@ -217,7 +192,7 @@ function M.setup(opts)
     end)
   end, { desc = "Show backlinks to current note" })
 
-  -- ── Global keymap for NotesInit (available before any vault exists) ──────
+  -- Global keymap for NotesInit — available before any vault exists
   local km = config.get().keymaps
   if km.init then
     vim.keymap.set("n", km.init, "<cmd>NotesInit<cr>",
