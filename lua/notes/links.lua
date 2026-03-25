@@ -13,7 +13,7 @@ function M.parse_under_cursor()
   -- Standard markdown link:  [text](path)
   local pos = 1
   while true do
-    local s, e, _, path = line:find("%[.-%]%((.-)%)", pos)
+    local s, e, path = line:find("%[.-%]%((.-)%)", pos)
     if not s then break end
     if col >= s and col <= e then
       return path, "markdown"
