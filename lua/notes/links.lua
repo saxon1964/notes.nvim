@@ -40,6 +40,36 @@ function M.parse_under_cursor()
   return nil, nil
 end
 
+--- Find the first link on the line that contains or starts at/right of col.
+--- Returns (path_string, kind) or (nil, nil).
+local function find_link_from_col(line, col)
+  local best_s, best_path, best_kind = math.huge, nil, nil
+
+  local pos = 1
+  while true do
+    local s, e, path = line:find("%[.-%]%((.-)%)", pos)
+    if not s then break end
+    if col <= e and s < best_s then
+      best_s, best_path, best_kind = s, path, "markdown"
+    end
+    pos = e + 1
+  end
+
+  pos = 1
+  while true do
+    local s, e, inner = line:find("%[%[(.-)%]%]", pos)
+    if not s then break end
+    if col <= e and s < best_s then
+      local path = inner:match("^(.-)%|") or inner
+      if not path:match("%.%w+$") then path = path .. ".md" end
+      best_s, best_path, best_kind = s, path, "wiki"
+    end
+    pos = e + 1
+  end
+
+  return best_path, best_kind
+end
+
 --- Resolve a (possibly relative) link path to an absolute filesystem path.
 --- Uses the current buffer's directory as the base.
 local function resolve_abs(link_path, kind)
@@ -55,12 +85,14 @@ local function resolve_abs(link_path, kind)
   return vim.fn.simplify(from_dir .. "/" .. link_path)
 end
 
---- Follow the link under the cursor.
+--- Follow the first link at or to the right of the cursor on the current line.
 --- If the target does not exist it is created with the default template.
 function M.follow()
-  local link_path, kind = M.parse_under_cursor()
+  local line = vim.api.nvim_get_current_line()
+  local col  = vim.api.nvim_win_get_cursor(0)[2] + 1  -- 1-indexed
+  local link_path, kind = find_link_from_col(line, col)
   if not link_path then
-    vim.notify("No link under cursor", vim.log.levels.WARN)
+    vim.notify("No link on this line at or right of cursor", vim.log.levels.WARN)
     return
   end
 
