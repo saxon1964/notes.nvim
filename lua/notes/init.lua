@@ -126,9 +126,7 @@ function M.setup(opts)
   local config = require("notes.config")
   config.setup(opts)
 
-  -- Wire immediately if vault is known; otherwise try to auto-detect from cwd
-  -- so the BufEnter autocmd is ready before any buffers open.
-  -- This matters for lazy-loaded setups where setup() runs on the first BufEnter.
+  -- Wire immediately if vault is known; otherwise try to auto-detect from cwd.
   if config.get().vault then
     wire()
   else
@@ -137,8 +135,25 @@ function M.setup(opts)
       config.set_vault(detected)
       wire()
     end
-    -- If still not detected, wiring is deferred until ensure_vault() is called.
   end
+
+  -- Fallback: detect vault from the directory of any *.md file entered.
+  -- Handles the case where Neovim starts outside the vault (e.g. `nvim ~/notes/foo.md`
+  -- run from ~). The _wired guard makes this a no-op once the vault is known.
+  vim.api.nvim_create_autocmd("BufEnter", {
+    pattern  = "*.md",
+    group    = vim.api.nvim_create_augroup("NotesAutoDetect", { clear = true }),
+    callback = function(ev)
+      if _wired then return end
+      if not ev.file or ev.file == "" then return end
+      local dir      = vim.fn.fnamemodify(ev.file, ":h")
+      local detected = require("notes.files").find_vault_root(dir)
+      if detected then
+        require("notes.config").set_vault(detected)
+        wire()
+      end
+    end,
+  })
 
   -- ── Commands (registered unconditionally; vault resolved on first use) ───
 
