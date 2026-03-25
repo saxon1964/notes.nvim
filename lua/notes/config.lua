@@ -8,6 +8,7 @@ local defaults = {
   index_file  = "INDEX.md",
   auto_index  = true,
   keymaps = {
+    init            = "<leader>nI",   -- global: initialize vault in cwd
     insert_link     = "<leader>nl",
     insert_new_link = "<leader>nn",
     follow_link     = "<leader>no",

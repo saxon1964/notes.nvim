@@ -180,6 +180,13 @@ function M.setup(opts)
       require("notes.backlinks").show()
     end)
   end, { desc = "Show backlinks to current note" })
+
+  -- ── Global keymap for NotesInit (available before any vault exists) ──────
+  local km = config.get().keymaps
+  if km.init then
+    vim.keymap.set("n", km.init, "<cmd>NotesInit<cr>",
+      { silent = true, desc = "Notes: initialize vault in cwd" })
+  end
 end
 
 return M
