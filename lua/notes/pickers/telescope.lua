@@ -23,4 +23,12 @@ function M.pick(items, opts, on_choice)
   }):find()
 end
 
+function M.search(vault, query)
+  require("telescope.builtin").live_grep({
+    search_dirs  = { vault },
+    default_text = query or "",
+    prompt_title = "Search Notes",
+  })
+end
+
 return M

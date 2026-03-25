@@ -7,4 +7,11 @@ function M.pick(items, opts, on_choice)
   return require("notes.pickers.native").pick(items, opts, on_choice)
 end
 
+function M.search(vault, query)
+  require("snacks").picker.grep({
+    cwd    = vault,
+    search = query or "",
+  })
+end
+
 return M

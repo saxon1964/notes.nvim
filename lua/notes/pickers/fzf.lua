@@ -14,4 +14,12 @@ function M.pick(items, opts, on_choice)
   })
 end
 
+function M.search(vault, query)
+  require("fzf-lua").live_grep({
+    cwd    = vault,
+    search = query or "",
+    prompt = "Search Notes> ",
+  })
+end
+
 return M

@@ -15,10 +15,17 @@ end
 function M.pick(items, opts, on_choice)
   local backend = detect()
   local ok, mod = pcall(require, "notes.pickers." .. backend)
-  if not ok then
-    mod = require("notes.pickers.native")
-  end
+  if not ok then mod = require("notes.pickers.native") end
   mod.pick(items, opts, on_choice)
+end
+
+--- Open a live-grep search over vault using the active picker backend.
+--- Falls back to quickfix for the native backend.
+function M.search(vault, query)
+  local backend = detect()
+  local ok, mod = pcall(require, "notes.pickers." .. backend)
+  if not ok then mod = require("notes.pickers.native") end
+  mod.search(vault, query)
 end
 
 return M
