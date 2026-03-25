@@ -1,7 +1,7 @@
 local M = {}
 
 local defaults = {
-  vault       = nil,   -- set in setup(); falls back to cwd
+  vault       = nil,    -- auto-detected via .notesroot marker; or set explicitly
   picker      = "auto", -- auto | telescope | fzf | snacks | native
   inbox_dir   = "inbox",
   journal_dir = "journal",
@@ -30,11 +30,16 @@ local current = vim.deepcopy(defaults)
 
 function M.setup(opts)
   current = vim.tbl_deep_extend("force", defaults, opts or {})
-  if not current.vault then
-    current.vault = vim.fn.getcwd()
+  if current.vault then
+    -- Explicit vault provided — normalise path
+    current.vault = current.vault:gsub("[/\\]+$", "")
   end
-  -- Normalize: strip trailing slash
-  current.vault = current.vault:gsub("[/\\]+$", "")
+  -- If vault is nil, auto-detection runs lazily on first use (see init.lua)
+end
+
+--- Update the vault path at runtime (used by auto-detection).
+function M.set_vault(path)
+  current.vault = path:gsub("[/\\]+$", "")
 end
 
 function M.get()

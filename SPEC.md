@@ -7,10 +7,25 @@ external dependencies. Integrates with popular pickers (telescope, fzf-lua) when
 
 ---
 
+## Vault Detection
+
+On first use the plugin walks upward from `cwd` looking for a `.notesroot` marker file.
+If found, that directory becomes the vault root. If not found, the user is asked whether
+to initialize `cwd` as the vault root (which creates `.notesroot` there).
+
+`:NotesInit` can be used at any time to explicitly initialize the current directory.
+
+The `.notesroot` file is zero-size and should be committed if you track your notes in git.
+
+The `vault` config option overrides auto-detection when set explicitly.
+
+---
+
 ## Vault Structure
 
 ```
 vault/
+├── .notesroot                  ← marker file; identifies vault root
 ├── INDEX.md                    ← auto-maintained, never edit manually
 ├── inbox/                      ← new notes without an explicit parent
 │   └── random-thought.md
@@ -36,8 +51,9 @@ vault/
 
 ```lua
 require("notes").setup({
-  -- Required: root directory of the vault
-  vault = vim.fn.expand("~/notes"),
+  -- Vault root is auto-detected via the .notesroot marker file.
+  -- Set this only if you want to override auto-detection.
+  -- vault = vim.fn.expand("~/notes"),
 
   -- Picker backend: "auto" | "telescope" | "fzf" | "snacks" | "native"
   -- "auto" tries telescope → fzf-lua → vim.ui.select
@@ -77,6 +93,7 @@ require("notes").setup({
 
 | Command | Description |
 |---|---|
+| `:NotesInit` | Initialize current directory as vault root (creates `.notesroot`) |
 | `:NotesDaily [YYYY-MM-DD]` | Open today's (or given date's) daily note |
 | `:NotesNew [title]` | Create new note in `inbox/` |
 | `:NotesIndex` | Regenerate and open `INDEX.md` |

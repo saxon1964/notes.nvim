@@ -1,6 +1,34 @@
 local M = {}
 
+--- The marker file that identifies a vault root directory.
+M.MARKER = ".notesroot"
+
 local function cfg() return require("notes.config").get() end
+
+--- Walk upward from start_dir (defaults to cwd) looking for the marker file.
+--- Returns the vault root path, or nil if not found.
+function M.find_vault_root(start_dir)
+  local dir = start_dir or vim.fn.getcwd()
+  while true do
+    if vim.fn.filereadable(dir .. "/" .. M.MARKER) == 1 then
+      return dir
+    end
+    local parent = vim.fn.fnamemodify(dir, ":h")
+    if parent == dir then return nil end  -- reached filesystem root
+    dir = parent
+  end
+end
+
+--- Create the marker file and standard subdirectories in path.
+--- Notifies the user on success.
+function M.init_vault(path)
+  local c = cfg()
+  local fh = io.open(path .. "/" .. M.MARKER, "w")
+  if fh then fh:close() end
+  vim.fn.mkdir(path .. "/" .. c.inbox_dir,   "p")
+  vim.fn.mkdir(path .. "/" .. c.journal_dir, "p")
+  vim.notify("notes.nvim: vault initialized at " .. path, vim.log.levels.INFO)
+end
 
 --- Return all .md files in the vault, as paths relative to vault root.
 --- INDEX.md is excluded.

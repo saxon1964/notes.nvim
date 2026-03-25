@@ -28,8 +28,9 @@ with **telescope**, **fzf-lua**, and **snacks.nvim** when available.
 
 ```lua
 require("notes").setup({
-  -- Root directory of your notes vault (required)
-  vault = vim.fn.expand("~/notes"),
+  -- No vault needed — auto-detected via .notesroot marker.
+  -- Override only if you want to force a specific path:
+  -- vault = vim.fn.expand("~/notes"),
 
   -- Picker: "auto" | "telescope" | "fzf" | "snacks" | "native"
   picker = "auto",
@@ -49,10 +50,22 @@ require("notes").setup({
 
 ---
 
+## Vault auto-detection
+
+The plugin walks upward from your current working directory looking for a `.notesroot`
+marker file. On first use, if no marker is found, you are asked whether to initialise
+the current directory as the vault root.
+
+Run `:NotesInit` at any time to explicitly initialise a directory.
+Commit `.notesroot` to git alongside your notes.
+
+---
+
 ## Vault layout
 
 ```
 ~/notes/
+├── .notesroot              ← vault marker; commit this to git
 ├── INDEX.md                ← auto-maintained; never edit manually
 ├── inbox/                  ← new notes without an explicit parent
 ├── journal/
@@ -76,6 +89,7 @@ shares the parent's name: `parent/<child-slug>.md`. Notes without a parent go to
 
 | Command | Description |
 |---|---|
+| `:NotesInit` | Initialize current directory as vault root |
 | `:NotesDaily [YYYY-MM-DD]` | Open today's (or a specific) daily note |
 | `:NotesNew [title]` | Create a new note in `inbox/` |
 | `:NotesIndex` | Regenerate and open `INDEX.md` |
