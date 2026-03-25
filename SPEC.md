@@ -72,7 +72,7 @@ require("notes").setup({
   keymaps = {
     insert_link     = "<leader>nl",   -- insert link to existing note
     insert_new_link = "<leader>nn",   -- insert link + create child note
-    follow_link     = "<leader>nf",   -- open note under cursor
+    follow_link     = "<leader>no",   -- open note under cursor
     backlinks       = "<leader>nb",   -- show backlinks in quickfix
     daily           = "<leader>nd",   -- open today's daily note
     search          = "<leader>ns",   -- full-text search
@@ -110,7 +110,7 @@ All keymaps are buffer-local and only active inside vault `*.md` files.
 |---|---|
 | `<leader>nl` | Picker: choose existing note → insert `[stem](rel-path)` at cursor |
 | `<leader>nn` | Prompt for title → create child note → insert link at cursor |
-| `<leader>nf` | Follow link under cursor (creates file if missing) |
+| `<leader>no` | Follow link under cursor (creates file if missing) |
 | `<leader>nb` | Backlinks → quickfix |
 | `<leader>nd` | Open today's daily note |
 | `<leader>ns` | Search prompt → quickfix |

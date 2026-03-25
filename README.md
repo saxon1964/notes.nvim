@@ -39,7 +39,7 @@ require("notes").setup({
   keymaps = {
     insert_link     = "<leader>nl",   -- link to existing note
     insert_new_link = "<leader>nn",   -- create child note + insert link
-    follow_link     = "<leader>nf",   -- open note under cursor
+    follow_link     = "<leader>no",   -- open note under cursor
     backlinks       = "<leader>nb",   -- backlinks → quickfix
     daily           = "<leader>nd",   -- today's daily note
     search          = "<leader>ns",   -- full-text search → quickfix
