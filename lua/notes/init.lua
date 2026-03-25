@@ -43,6 +43,15 @@ local function wire()
       "<cmd>NotesNew<cr>",
       opts("create new note in inbox"))
   end
+  if km.delete_note then
+    vim.keymap.set("n", km.delete_note,
+      function()
+        if require_vault_file("delete note") then
+          require("notes.links").delete()
+        end
+      end,
+      opts("delete file under link or current file"))
+  end
   if km.insert_link then
     vim.keymap.set("n", km.insert_link,
       function()

@@ -127,4 +127,44 @@ function M.insert_new()
   end)
 end
 
+--- Delete the file under the cursor link, or the current file if no link.
+--- Asks for confirmation before deleting.
+function M.delete()
+  local link_path, kind = M.parse_under_cursor()
+  local target_abs
+
+  if link_path then
+    target_abs = resolve_abs(link_path, kind)
+  else
+    target_abs = vim.api.nvim_buf_get_name(0)
+  end
+
+  if not target_abs or target_abs == "" or vim.fn.filereadable(target_abs) == 0 then
+    vim.notify("No file to delete", vim.log.levels.WARN)
+    return
+  end
+
+  local display = vim.fn.fnamemodify(target_abs, ":~")
+  vim.ui.select({ "Yes", "No" }, {
+    prompt = "Delete " .. display .. "?",
+  }, function(choice)
+    if choice ~= "Yes" then return end
+
+    -- Close any buffer showing this file before removing it
+    for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+      if vim.api.nvim_buf_get_name(buf) == target_abs then
+        vim.api.nvim_buf_delete(buf, { force = true })
+        break
+      end
+    end
+
+    local ok, err = os.remove(target_abs)
+    if ok then
+      vim.notify("Deleted: " .. display, vim.log.levels.INFO)
+    else
+      vim.notify("Could not delete: " .. (err or target_abs), vim.log.levels.ERROR)
+    end
+  end)
+end
+
 return M

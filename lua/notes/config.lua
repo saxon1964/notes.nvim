@@ -10,6 +10,7 @@ local defaults = {
   keymaps = {
     init            = "<leader>nI",   -- global: initialize vault in cwd
     new_note        = "<leader>nc",   -- create new note in inbox
+    delete_note     = "<leader>nD",   -- delete file under link or current file
     insert_link     = "<leader>nl",
     insert_new_link = "<leader>nn",
     follow_link     = "<leader>no",
