@@ -2,6 +2,21 @@ local M = {}
 
 local _wired = false
 
+--- Return true if the current buffer is a *.md file inside the vault.
+local function in_vault_file()
+  local cfg  = require("notes.config").get()
+  if not cfg.vault then return false end
+  local name = vim.api.nvim_buf_get_name(0)
+  return name:sub(1, #cfg.vault) == cfg.vault and name:match("%.md$") ~= nil
+end
+
+--- Warn and return false if current buffer is not a vault markdown file.
+local function require_vault_file(action)
+  if in_vault_file() then return true end
+  vim.notify("notes.nvim: '" .. action .. "' requires a vault *.md file", vim.log.levels.WARN)
+  return false
+end
+
 --- Complete the setup that requires a known vault path.
 --- Safe to call multiple times; only runs once.
 local function wire()
@@ -30,22 +45,38 @@ local function wire()
   end
   if km.insert_link then
     vim.keymap.set("n", km.insert_link,
-      function() require("notes.links").insert_existing() end,
+      function()
+        if require_vault_file("insert link") then
+          require("notes.links").insert_existing()
+        end
+      end,
       opts("insert link to existing note"))
   end
   if km.insert_new_link then
     vim.keymap.set("n", km.insert_new_link,
-      function() require("notes.links").insert_new() end,
+      function()
+        if require_vault_file("insert new link") then
+          require("notes.links").insert_new()
+        end
+      end,
       opts("insert link to new child note"))
   end
   if km.follow_link then
     vim.keymap.set("n", km.follow_link,
-      function() require("notes.links").follow() end,
+      function()
+        if require_vault_file("follow link") then
+          require("notes.links").follow()
+        end
+      end,
       opts("follow link under cursor"))
   end
   if km.backlinks then
     vim.keymap.set("n", km.backlinks,
-      function() require("notes.backlinks").show() end,
+      function()
+        if require_vault_file("backlinks") then
+          require("notes.backlinks").show()
+        end
+      end,
       opts("show backlinks"))
   end
   if km.daily then
