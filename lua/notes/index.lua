@@ -103,9 +103,14 @@ function M.generate()
     "",
     string.format("_Last updated: %s_", os.date("%Y-%m-%d %H:%M")),
     "",
-    "## Recent Notes",
+    "## All Notes",
     "",
   }
+  for _, l in ipairs(tree_lines) do table.insert(out, l) end
+
+  table.insert(out, "")
+  table.insert(out, "## Recent Notes")
+  table.insert(out, "")
   for _, l in ipairs(recent_lines) do table.insert(out, l) end
 
   if #journal_lines > 0 then
@@ -115,10 +120,6 @@ function M.generate()
     for _, l in ipairs(journal_lines) do table.insert(out, l) end
   end
 
-  table.insert(out, "")
-  table.insert(out, "## All Notes")
-  table.insert(out, "")
-  for _, l in ipairs(tree_lines) do table.insert(out, l) end
   table.insert(out, "")
 
   local index_path = vault .. "/" .. cfg.index_file
