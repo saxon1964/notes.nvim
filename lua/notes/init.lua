@@ -23,6 +23,11 @@ local function wire()
   local opts = function(desc)
     return { silent = true, desc = "Notes: " .. desc }
   end
+  if km.new_note then
+    vim.keymap.set("n", km.new_note,
+      "<cmd>NotesNew<cr>",
+      opts("create new note in inbox"))
+  end
   if km.insert_link then
     vim.keymap.set("n", km.insert_link,
       function() require("notes.links").insert_existing() end,

@@ -9,6 +9,7 @@ local defaults = {
   auto_index  = true,
   keymaps = {
     init            = "<leader>nI",   -- global: initialize vault in cwd
+    new_note        = "<leader>nc",   -- create new note in inbox
     insert_link     = "<leader>nl",
     insert_new_link = "<leader>nn",
     follow_link     = "<leader>no",

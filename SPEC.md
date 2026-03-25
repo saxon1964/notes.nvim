@@ -71,6 +71,7 @@ require("notes").setup({
   -- Key mappings (set any to false to disable)
   keymaps = {
     init            = "<leader>nI",   -- global: initialize vault in cwd
+    new_note        = "<leader>nc",   -- create new note in inbox
     insert_link     = "<leader>nl",   -- insert link to existing note
     insert_new_link = "<leader>nn",   -- insert link + create child note
     follow_link     = "<leader>no",   -- open note under cursor
@@ -112,6 +113,7 @@ as soon as the vault root is detected.
 | Default | Action |
 |---|---|
 | `<leader>nI` | Initialize vault in cwd (`:NotesInit`) |
+| `<leader>nc` | Prompt for title → create new note in `inbox/` |
 | `<leader>nl` | Picker: choose existing note → insert `[stem](rel-path)` at cursor |
 | `<leader>nn` | Prompt for title → create child note → insert link at cursor |
 | `<leader>no` | Follow link under cursor (creates file if missing) |
