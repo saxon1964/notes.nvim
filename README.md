@@ -15,9 +15,7 @@ with **telescope**, **fzf-lua**, and **snacks.nvim** when available.
 {
   "saxon1964/notes.nvim",
   config = function()
-    require("notes").setup({
-      vault = vim.fn.expand("~/notes"),
-    })
+    require("notes").setup({})
   end,
 }
 ```
