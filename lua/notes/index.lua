@@ -146,6 +146,15 @@ function M.setup_autocmd()
   local cfg        = require("notes.config").get()
   local index_path = cfg.vault .. "/" .. cfg.index_file
 
+  vim.api.nvim_create_autocmd("BufReadPost", {
+    pattern  = index_path,
+    group    = vim.api.nvim_create_augroup("NotesIndexReadonly", { clear = true }),
+    callback = function()
+      vim.bo.modifiable = false
+      vim.bo.readonly   = true
+    end,
+  })
+
   vim.api.nvim_create_autocmd("BufWritePost", {
     pattern  = cfg.vault .. "/**/*.md",
     group    = vim.api.nvim_create_augroup("NotesAutoIndex", { clear = true }),
