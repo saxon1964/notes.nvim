@@ -78,7 +78,7 @@ shares the parent's name: `parent/<child-slug>.md`. Notes without a parent go to
 |---|---|
 | `:NotesDaily [YYYY-MM-DD]` | Open today's (or a specific) daily note |
 | `:NotesNew [title]` | Create a new note in `inbox/` |
-| `:NotesIndex` | Force-regenerate `INDEX.md` |
+| `:NotesIndex` | Regenerate and open `INDEX.md` |
 | `:NotesSearch [query]` | Full-text search → quickfix |
 | `:NotesBacklinks` | Notes linking to the current file → quickfix |
 

@@ -79,7 +79,7 @@ require("notes").setup({
 |---|---|
 | `:NotesDaily [YYYY-MM-DD]` | Open today's (or given date's) daily note |
 | `:NotesNew [title]` | Create new note in `inbox/` |
-| `:NotesIndex` | Force-regenerate `INDEX.md` |
+| `:NotesIndex` | Regenerate and open `INDEX.md` |
 | `:NotesSearch [query]` | Full-text grep across vault → quickfix |
 | `:NotesBacklinks` | Show all notes linking to the current file → quickfix |
 

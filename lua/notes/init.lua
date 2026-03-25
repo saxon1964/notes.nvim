@@ -43,8 +43,8 @@ function M.setup(opts)
 
   vim.api.nvim_create_user_command("NotesIndex", function()
     require("notes.index").generate()
-    vim.notify("notes.nvim: index regenerated", vim.log.levels.INFO)
-  end, { desc = "Regenerate INDEX.md" })
+    vim.cmd.edit(cfg.vault .. "/" .. cfg.index_file)
+  end, { desc = "Regenerate and open INDEX.md" })
 
   vim.api.nvim_create_user_command("NotesSearch", function(a)
     require("notes.search").search(a.args ~= "" and a.args or nil)
@@ -101,9 +101,9 @@ function M.setup(opts)
         vim.keymap.set("n", km.index,
           function()
             require("notes.index").generate()
-            vim.notify("notes.nvim: index regenerated", vim.log.levels.INFO)
+            vim.cmd.edit(cfg.vault .. "/" .. cfg.index_file)
           end,
-          bopts("regenerate index"))
+          bopts("open index"))
       end
     end,
   })
