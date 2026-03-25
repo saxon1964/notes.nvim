@@ -150,7 +150,7 @@ function M.setup_autocmd()
     group    = vim.api.nvim_create_augroup("NotesAutoIndex", { clear = true }),
     callback = function(ev)
       if ev.file ~= index_path then
-        M.generate()
+        vim.schedule(M.generate)
       end
     end,
   })
