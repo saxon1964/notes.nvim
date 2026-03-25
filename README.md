@@ -33,14 +33,17 @@ require("notes").setup({
   -- Picker: "auto" | "telescope" | "fzf" | "snacks" | "native"
   picker = "auto",
 
-  -- Override any keymap by setting its value, or disable it with false
+  -- Override any keymap or disable it with false
   keymaps = {
-    insert_link     = "<leader>nl",   -- link to existing note
+    init            = "<leader>nI",   -- initialize vault in cwd
+    new_note        = "<leader>nc",   -- create note in inbox
+    delete_note     = "<leader>nD",   -- delete note under link or current file
+    insert_link     = "<leader>nl",   -- insert link to existing note
     insert_new_link = "<leader>nn",   -- create child note + insert link
-    follow_link     = "<leader>no",   -- open note under cursor
-    backlinks       = "<leader>nb",   -- backlinks → quickfix
+    follow_link     = "<leader>no",   -- follow link at or right of cursor
+    backlinks       = "<leader>nb",   -- show backlinks
     daily           = "<leader>nd",   -- today's daily note
-    search          = "<leader>ns",   -- full-text search → quickfix
+    search          = "<leader>ns",   -- live full-text search
     index           = "<leader>ni",   -- regenerate INDEX.md
   },
 })
@@ -50,11 +53,14 @@ require("notes").setup({
 
 ## Vault auto-detection
 
-The plugin walks upward from your current working directory looking for a `.notesroot`
-marker file. On first use, if no marker is found, you are asked whether to initialise
-the current directory as the vault root.
+On startup the plugin walks upward from your working directory looking for a `.notesroot`
+marker file. When found, that directory becomes the vault root and all keymaps activate.
+If you open a file directly (e.g. `nvim ~/notes/foo.md` from `~`), detection runs from
+the file's own directory instead.
 
-Run `:NotesInit` at any time to explicitly initialise a directory.
+If no marker is found anywhere you are asked whether to initialise the current directory.
+Run `:NotesInit` (or `<leader>nI`) at any time to do it explicitly.
+
 Commit `.notesroot` to git alongside your notes.
 
 ---
@@ -64,7 +70,7 @@ Commit `.notesroot` to git alongside your notes.
 ```
 ~/notes/
 ├── .notesroot              ← vault marker; commit this to git
-├── INDEX.md                ← auto-maintained; never edit manually
+├── INDEX.md                ← auto-maintained; do not edit manually
 ├── inbox/                  ← new notes without an explicit parent
 ├── journal/
 │   └── 2026/
@@ -78,8 +84,30 @@ Commit `.notesroot` to git alongside your notes.
             └── telescope.md
 ```
 
-When you create a child note from `parent.md` the file is placed in a folder that
-shares the parent's name: `parent/<child-slug>.md`. Notes without a parent go to `inbox/`.
+When you create a child note from `parent.md` it is placed in `parent/<child-slug>.md`.
+Notes without a parent go to `inbox/`.
+
+---
+
+## Keymaps
+
+All keymaps are global once the vault is detected. `<leader>nI` is always available.
+
+| Keymap | Action |
+|---|---|
+| `<leader>nI` | Initialize vault in cwd |
+| `<leader>nc` | Prompt for title → create note in `inbox/` |
+| `<leader>nD` | Delete file under cursor link, or current file (with confirmation) |
+| `<leader>nl` | Picker: choose existing note → insert `[stem](rel-path)` at cursor |
+| `<leader>nn` | Prompt for title → create child note → insert link at cursor |
+| `<leader>no` | Follow first link at or right of cursor (creates file if missing) |
+| `<leader>nb` | Show backlinks to current file |
+| `<leader>nd` | Open today's daily note |
+| `<leader>ns` | Live full-text search across vault |
+| `<leader>ni` | Regenerate and open `INDEX.md` |
+
+`<leader>nl`, `<leader>nn`, `<leader>no`, `<leader>nb`, and `<leader>nD` warn if the
+current buffer is not a vault `*.md` file.
 
 ---
 
@@ -91,8 +119,8 @@ shares the parent's name: `parent/<child-slug>.md`. Notes without a parent go to
 | `:NotesDaily [YYYY-MM-DD]` | Open today's (or a specific) daily note |
 | `:NotesNew [title]` | Create a new note in `inbox/` |
 | `:NotesIndex` | Regenerate and open `INDEX.md` |
-| `:NotesSearch [query]` | Full-text search → quickfix |
-| `:NotesBacklinks` | Notes linking to the current file → quickfix |
+| `:NotesSearch [query]` | Full-text search across vault |
+| `:NotesBacklinks` | Notes linking to the current file |
 
 ---
 
@@ -114,10 +142,10 @@ the plugin (portable across renderers).
 | | Required | Notes |
 |---|---|---|
 | Neovim ≥ 0.9 | ✓ | |
-| `rg` (ripgrep) | | Faster search; falls back to `grep` |
-| telescope.nvim | | Rich picker |
-| fzf-lua | | Rich picker |
-| snacks.nvim | | Enhances `vim.ui.select` automatically |
+| `rg` (ripgrep) | | Faster search and backlinks; falls back to `grep` |
+| telescope.nvim | | Live grep + rich picker |
+| fzf-lua | | Live grep + rich picker |
+| snacks.nvim | | Live grep + enhances `vim.ui.select` |
 
 ---
 

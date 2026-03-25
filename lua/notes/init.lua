@@ -1,5 +1,7 @@
 local M = {}
 
+M.version = "0.2.0"
+
 local _wired = false
 
 --- Return true if the current buffer is a *.md file inside the vault.
