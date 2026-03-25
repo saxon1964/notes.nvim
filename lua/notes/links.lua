@@ -78,6 +78,10 @@ end
 
 --- Insert a link to an existing note at the current cursor position.
 function M.insert_existing()
+  if M.parse_under_cursor() then
+    vim.notify("Cursor is already inside a link", vim.log.levels.WARN)
+    return
+  end
   local f = files()
   local all     = f.list()
   local current = f.current_rel()
@@ -96,6 +100,10 @@ end
 
 --- Prompt for a title, create a child note, and insert a link at cursor.
 function M.insert_new()
+  if M.parse_under_cursor() then
+    vim.notify("Cursor is already inside a link", vim.log.levels.WARN)
+    return
+  end
   local f       = files()
   local current = f.current_rel()
   local cdir    = f.child_dir(current)
