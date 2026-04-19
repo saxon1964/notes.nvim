@@ -1,0 +1,9 @@
+-- notes.nvim plugin entry point.
+-- This file is sourced automatically by Neovim / plugin managers.
+-- Actual initialization requires an explicit setup call in your config:
+--
+--   require("notes").setup({
+--     vault = vim.fn.expand("~/notes"),
+--   })
+--
+-- See SPEC.md for the full list of options.
