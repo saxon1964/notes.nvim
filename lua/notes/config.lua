@@ -19,6 +19,7 @@ local defaults = {
     insert_new_link = "<leader>nn",
     follow_link     = "<leader>no",
     backlinks       = "<leader>nb",
+    check_integrity = "<leader>nr",   -- check all links in vault
     daily           = "<leader>nd",
     search          = "<leader>ns",
     index           = "<leader>ni",

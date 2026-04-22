@@ -231,6 +231,92 @@ local function fix_dangling_links(source_file, target_abs, marker)
   end
 end
 
+--- Scan all vault markdown files for broken links and populate the quickfix list.
+function M.check_integrity()
+  local vault = cfg().vault
+  if not vault then
+    notify("Vault not set", vim.log.levels.WARN)
+    return
+  end
+
+  local all_files = vim.fn.glob(vault .. "/**/*.md", false, true)
+  local broken    = {}
+
+  for _, filepath in ipairs(all_files) do
+    local lines   = vim.fn.readfile(filepath)
+    if not lines then goto continue end
+    local file_dir = vim.fn.fnamemodify(filepath, ":h")
+
+    local function resolve_from_file(path, kind)
+      local decoded = url_decode(path)
+      if kind == "wiki" then
+        return vim.fn.simplify(vault .. "/" .. decoded)
+      end
+      if decoded:sub(1, 1) == "/" then
+        return vim.fn.simplify(vault .. decoded)
+      end
+      return vim.fn.simplify(file_dir .. "/" .. decoded)
+    end
+
+    for lnum, line in ipairs(lines) do
+      -- markdown links: [text](path)
+      local pos = 1
+      while true do
+        local s, _, text, path = line:find("%[(.-)%]%((.-)%)", pos)
+        if not s then break end
+        -- skip external URLs, anchors, and empty paths
+        if path ~= ""
+          and not path:match("^https?://")
+          and not path:match("^ftps?://")
+          and not path:match("^mailto:")
+          and not path:match("^#")
+        then
+          local abs = resolve_from_file(path, "markdown")
+          if vim.fn.filereadable(abs) == 0 then
+            table.insert(broken, {
+              filename = filepath,
+              lnum     = lnum,
+              col      = s - 1,
+              text     = string.format("[%s](%s)", text, path),
+            })
+          end
+        end
+        pos = s + 1
+      end
+
+      -- wikilinks: [[path]] or [[path|alias]]
+      pos = 1
+      while true do
+        local s, _, inner = line:find("%[%[(.-)%]%]", pos)
+        if not s then break end
+        local wpath = inner:match("^(.-)%|") or inner
+        if not wpath:match("%.%w+$") then wpath = wpath .. ".md" end
+        local abs = resolve_from_file(wpath, "wiki")
+        if vim.fn.filereadable(abs) == 0 then
+          table.insert(broken, {
+            filename = filepath,
+            lnum     = lnum,
+            col      = s - 1,
+            text     = string.format("[[%s]]", inner),
+          })
+        end
+        pos = s + 1
+      end
+    end
+
+    ::continue::
+  end
+
+  if #broken == 0 then
+    notify("All links are valid", vim.log.levels.INFO)
+    return
+  end
+
+  vim.fn.setqflist(broken, "r")
+  vim.cmd("copen")
+  notify(string.format("%d broken link(s) found — see quickfix list", #broken), vim.log.levels.WARN)
+end
+
 --- Delete the file under the cursor link, or the current file if no link.
 --- Finds all backlinks first; on confirmation deletes the file and replaces
 --- dangling links in every affected note with italic text + marker.

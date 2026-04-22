@@ -124,6 +124,11 @@ local function wire()
       end,
       opts("show backlinks"))
   end
+  if km.check_integrity then
+    vim.keymap.set("n", km.check_integrity,
+      function() require("notes.links").check_integrity() end,
+      opts("check all vault links"))
+  end
   if km.daily then
     vim.keymap.set("n", km.daily,
       function() require("notes.journal").open_daily() end,
