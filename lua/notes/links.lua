@@ -84,6 +84,10 @@ end
 --- Uses the current buffer's directory as the base.
 local function resolve_abs(link_path, kind)
   local decoded = url_decode(link_path)
+  -- ~ paths are absolute outside the vault
+  if decoded:sub(1, 1) == "~" then
+    return vim.fn.expand(decoded)
+  end
   local vault = cfg().vault
   if kind == "wiki" then
     -- Wiki links are always relative to vault root
@@ -109,10 +113,17 @@ function M.follow()
 
   local abs = resolve_abs(link_path, kind)
 
-  -- Image files: open with image.nvim if available, else system viewer
+  -- Image files: open in system viewer
   local images = require("notes.images")
   if images.is_image(abs) then
     images.open(abs)
+    return
+  end
+
+  -- Directories: open in system file browser (Finder / xdg-open)
+  if vim.fn.isdirectory(abs) == 1 then
+    local cmd = vim.fn.has("mac") == 1 and "open" or "xdg-open"
+    vim.fn.jobstart({ cmd, abs }, { detach = true })
     return
   end
 
