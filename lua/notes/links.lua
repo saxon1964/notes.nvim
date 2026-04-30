@@ -111,6 +111,13 @@ function M.follow()
     return
   end
 
+  -- External URLs: open in default browser
+  if link_path:match("^https?://") or link_path:match("^ftps?://") then
+    local cmd = vim.fn.has("mac") == 1 and "open" or "xdg-open"
+    vim.fn.jobstart({ cmd, link_path }, { detach = true })
+    return
+  end
+
   local abs = resolve_abs(link_path, kind)
 
   -- Image files: open in system viewer
