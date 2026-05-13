@@ -31,7 +31,7 @@ function M.open(abs_path)
   vim.fn.jobstart({ cmd, abs_path }, { detach = true })
 end
 
---- List all files in the vault's images directory, relative to vault root.
+--- List image files in the vault's images directory, relative to vault root.
 function M.list()
   local cfg   = require("notes.config").get()
   local dir   = cfg.vault .. "/" .. cfg.images_dir
@@ -44,8 +44,28 @@ function M.list()
   for _, ext in ipairs(exts) do
     local matches = vim.fn.glob(dir .. "/**/" .. ext, false, true)
     for _, abs in ipairs(matches) do
-      -- store as vault-relative path
-      table.insert(result, abs:sub(#cfg.vault + 2))
+      local rel = abs:sub(#cfg.vault + 2)
+      if not rel:match("^%.") and not rel:match("/%.") then
+        table.insert(result, rel)
+      end
+    end
+  end
+  table.sort(result)
+  return result
+end
+
+--- List ALL files in the vault's images directory, relative to vault root.
+function M.list_all()
+  local cfg = require("notes.config").get()
+  local dir = cfg.vault .. "/" .. cfg.images_dir
+  local matches = vim.fn.glob(dir .. "/**/*", false, true)
+  local result = {}
+  for _, abs in ipairs(matches) do
+    if vim.fn.isdirectory(abs) == 0 then
+      local rel = abs:sub(#cfg.vault + 2)
+      if not rel:match("^%.") and not rel:match("/%.") then
+        table.insert(result, rel)
+      end
     end
   end
   table.sort(result)

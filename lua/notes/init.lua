@@ -88,7 +88,35 @@ local function wire()
       end,
       opts("insert image link"))
   end
-  if km.insert_link then
+  if km.insert_file then
+    vim.keymap.set("n", km.insert_file,
+      function()
+        if not require_vault_file("insert file") then return end
+        if require("notes.links").parse_under_cursor() then
+          notify("Cursor is already inside a link", vim.log.levels.WARN)
+          return
+        end
+        local images  = require("notes.images")
+        local files_m = require("notes.files")
+        images.clear_all()
+        local all = images.list_all()
+        if #all == 0 then
+          notify("No files found in " .. require("notes.config").get().images_dir .. "/",
+            vim.log.levels.WARN)
+          return
+        end
+        require("notes.pickers").pick(all, { prompt = "Insert file link" }, function(choice)
+          local current  = files_m.current_rel()
+          local rel_link = files_m.relative(current, choice):gsub(" ", "%%20")
+          local filename = vim.fn.fnamemodify(choice, ":t:r")
+          local link     = string.format("[%s](%s)", filename, rel_link)
+          local row, col = unpack(vim.api.nvim_win_get_cursor(0))
+          local line     = vim.api.nvim_get_current_line()
+          vim.api.nvim_set_current_line(line:sub(1, col) .. link .. line:sub(col + 1))
+        end)
+      end,
+      opts("insert file link"))
+  end
     vim.keymap.set("n", km.insert_link,
       function()
         if require_vault_file("insert link") then

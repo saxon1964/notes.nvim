@@ -15,6 +15,7 @@ local defaults = {
     new_note        = "<leader>nc",   -- create new note in inbox
     delete_note     = "<leader>nD",   -- delete file under link or current file
     insert_image    = "<leader>np",  -- insert image link from images/
+    insert_file     = "<leader>nf",  -- insert file link from images/
     insert_link     = "<leader>nl",
     insert_new_link = "<leader>nn",
     follow_link     = "<leader>no",

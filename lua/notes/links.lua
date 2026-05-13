@@ -141,6 +141,13 @@ function M.follow()
     files().create(rel, cfg().templates.new_note(title))
   end
 
+  -- Non-markdown files: open with system viewer rather than editing in Neovim
+  if not abs:match("%.md$") then
+    local cmd = vim.fn.has("mac") == 1 and "open" or "xdg-open"
+    vim.fn.jobstart({ cmd, abs }, { detach = true })
+    return
+  end
+
   vim.cmd.edit(abs)
 end
 
