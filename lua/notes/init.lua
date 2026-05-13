@@ -117,6 +117,7 @@ local function wire()
       end,
       opts("insert file link"))
   end
+  if km.insert_link then
     vim.keymap.set("n", km.insert_link,
       function()
         if require_vault_file("insert link") then
